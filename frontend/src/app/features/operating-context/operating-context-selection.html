@@ -1,0 +1,96 @@
+<main class="context-page">
+  <section class="context-card" aria-labelledby="context-title">
+    <header>
+      <p class="eyebrow">Working Context
+      </p>
+      <h1 id="context-title">Select a Border Crossing and Mode
+      </h1>
+      <p class="summary">
+        This selection determines which operational workflows are available. You can change it while using the system.
+      </p>
+    </header>
+
+    @if (store.status() === 'loading') {
+    <p class="state-message" role="status">
+
+      Loading available border crossings…
+    </p>
+    } @else if (store.status() === 'error') {
+    <div class="error" role="alert">
+      <p>{{ store.errorMessage() }}</p>
+      <button class="secondary" type="button" (click)="load()">Try Again
+      </button>
+    </div>
+    } @else {
+    @if (store.current(); as current) {
+    <p class="current" role="status">
+      Current Mode: <strong>{{ current.gateName }}</strong> ·
+      {{ current.checkpointName }}
+    </p>
+    }
+
+    <form (submit)="save($event)">
+      <div class="search-field">
+        <label for="checkpoint-search">Search for a Border Crossing
+        </label>
+        <input #checkpointSearch id="checkpoint-search" type="search" autocomplete="off" placeholder="Code or Name"
+          [value]="checkpointQuery()" (input)="updateQuery(checkpointSearch.value)" />
+      </div>
+
+      <fieldset>
+        <legend>Border Crossing
+        </legend>
+        @if (filteredCheckpoints().length === 0) {
+        <p class="empty">No results found
+        </p>
+        } @else {
+        <div class="option-grid checkpoints">
+          @for (checkpoint of filteredCheckpoints(); track checkpoint.id) {
+          <label class="option-card">
+            <input type="radio" name="checkpoint" [value]="checkpoint.id"
+              [checked]="selectedCheckpointId() === checkpoint.id" (change)="selectCheckpoint(checkpoint.id)" />
+            <span>
+              <strong>{{ checkpoint.name }}</strong>
+              <small>{{ checkpoint.code }}· Modes:
+                {{ checkpoint.gates.length }}</small>
+            </span>
+          </label>
+          }
+        </div>
+        }
+      </fieldset>
+
+      <fieldset [disabled]="!selectedCheckpoint()">
+        <legend>Gate Officer / Processing Mode
+        </legend>
+        @if (selectedCheckpoint(); as checkpoint) {
+        @if (checkpoint.gates.length === 0) {
+        <p class="empty">No data available
+        </p>
+        } @else {
+        <div class="option-grid gates">
+          @for (gate of checkpoint.gates; track gate.id) {
+          <label class="option-card gate-card">
+            <input type="radio" name="gate" [value]="gate.id" [checked]="selectedGateId() === gate.id"
+              (change)="selectGate(gate.id)" />
+            <span>
+              <strong>{{ gate.name }}</strong>
+              <small>{{ gate.code }}</small>
+            </span>
+          </label>
+          }
+        </div>
+        }
+        } @else {
+        <p class="empty">Please select a border crossing first.
+        </p>
+        }
+      </fieldset>
+
+      <button class="primary" type="submit" [disabled]="!canSave()">
+        {{ store.status() === 'saving' ? 'Saving…' : 'Confirm Operating Mode' }}
+      </button>
+    </form>
+    }
+  </section>
+</main>

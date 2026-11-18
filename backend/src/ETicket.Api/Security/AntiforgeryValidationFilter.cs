@@ -1,0 +1,25 @@
+using Microsoft.AspNetCore.Antiforgery;
+
+namespace ETicket.Api.Security;
+
+public sealed class AntiforgeryValidationFilter(IAntiforgery antiforgery) : IEndpointFilter
+{
+    public async ValueTask<object?> InvokeAsync(
+        EndpointFilterInvocationContext context,
+        EndpointFilterDelegate next)
+    {
+        try
+        {
+            await antiforgery.ValidateRequestAsync(context.HttpContext);
+        }
+        catch (AntiforgeryValidationException)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status400BadRequest,
+                title: "Antiforgery validation failed.",
+                detail: "Refresh the page and repeat the request.");
+        }
+
+        return await next(context);
+    }
+}

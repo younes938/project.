@@ -1,0 +1,44 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.page {
+  display: grid;
+  min-height: 100vh;
+  padding: 1.5rem;
+  place-items: center;
+  text-align: center;
+}
+
+section {
+  width: min(100%, 32rem);
+  padding: 2.5rem;
+  border: 1px solid #d8e0e8;
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.code {
+  margin: 0;
+  color: #b45309;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+h1 {
+  margin: 0.5rem 0 1rem;
+}
+
+p:not(.code) {
+  color: #526476;
+  line-height: 1.6;
+}
+
+a {
+  display: inline-block;
+  margin-top: 0.75rem;
+  color: #0369a1;
+  font-weight: 700;
+}

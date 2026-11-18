@@ -1,0 +1,92 @@
+<main class="dashboard">
+  <aside class="sidebar" aria-label="Main Menu">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">B</div>
+      <div><strong>Border Control</strong><small>Electronic System</small></div>
+    </div>
+
+    <p class="nav-label">Main Menu</p>
+    <nav class="nav-list">
+      <a class="nav-item active" routerLink="/" aria-current="page"><span aria-hidden="true">▦</span> Dashboard</a>
+      <a class="nav-item" routerLink="/vehicle-entry"><span aria-hidden="true">▣</span> Vehicle Entry</a>
+      <a class="nav-item" routerLink="/vehicle-visits"><span aria-hidden="true">▤</span> Vehicle Visits</a>
+      <a class="nav-item" routerLink="/gate-devices"><span aria-hidden="true">⌁</span> Gate Companion Devices</a>
+      <a class="nav-item" routerLink="/operating-context" [queryParams]="{ returnUrl: '/' }"><span aria-hidden="true">⇄</span> Crossing Settings</a>
+      <a class="nav-item" routerLink="/passengers"><span aria-hidden="true">♙</span> Passenger Management</a>
+      <a class="nav-item" routerLink="/shipments"><span aria-hidden="true">▤</span> Shipment Management</a>
+      <a class="nav-item" routerLink="/inspections"><span aria-hidden="true">◷</span> Security Inspections</a>
+      <a class="nav-item" routerLink="/reports"><span aria-hidden="true">▥</span> Reports</a>
+      <a class="nav-item" routerLink="/audit"><span aria-hidden="true">◴</span> Audit Log</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span class="status-dot" aria-hidden="true"></span>
+      <div><strong>API Services Enabled</strong><small>Passengers and vehicles are stored in SQL Server</small></div>
+    </div>
+  </aside>
+
+  <section class="main-area">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Border Control Management System</p>
+        <h1>Dashboard</h1>
+      </div>
+      <div class="topbar-actions">
+        @if (auth.session(); as session) {
+          <div class="user-chip"><span class="avatar" aria-hidden="true">{{ session.displayName.charAt(0) }}</span><span><strong>{{ session.displayName }}</strong><small>{{ session.roles.join(' ,  ') }}</small></span></div>
+        }
+        <button class="logout" type="button" (click)="signOut()">Sign Out</button>
+      </div>
+    </header>
+
+    @if (auth.session(); as session) {
+      <section class="welcome-card">
+        <div>
+          <p class="welcome-kicker">Welcome Back</p>
+          <h2>{{ session.displayName }}</h2>
+          <p>Monitor crossing operations and access services available to your account permissions.</p>
+        </div>
+        <div class="welcome-icon" aria-hidden="true">⌁</div>
+      </section>
+
+      @if (operatingContext.current(); as context) {
+        <section class="context-card">
+          <span class="context-icon" aria-hidden="true">⌖</span>
+          <div class="context-details"><small>Active Work Location</small><strong>{{ context.checkpointName }}</strong><span>{{ context.gateName }} · {{ context.checkpointCode }}</span></div>
+          <a routerLink="/operating-context" [queryParams]="{ returnUrl: '/' }">Change Location</a>
+        </section>
+      }
+
+      <div class="section-heading"><div><h2>Crossing Overview</h2><p>Live statistics from API endpoints and server records.</p></div><button class="demo-badge" type="button" (click)="refreshStatistics()">Refresh Statistics</button></div>
+
+      <section class="stats-grid" aria-label="Crossing Statistics">
+        <article class="stat-card"><div class="stat-top"><span>Passengers</span><span class="stat-icon blue" aria-hidden="true">♙</span></div><strong>{{ passengerCount() }}</strong><small>{{ allowedPassengerCount() }} Passengers with Allowed status</small></article>
+        <article class="stat-card"><div class="stat-top"><span>Vehicles</span><span class="stat-icon green" aria-hidden="true">▣</span></div><strong>{{ vehicleCount() }}</strong><small>{{ deniedVehicleCount() }} Denied crossing decisions</small></article>
+        <article class="stat-card"><div class="stat-top"><span>Shipments</span><span class="stat-icon orange" aria-hidden="true">▤</span></div><strong>{{ shipmentCount() }}</strong><small>{{ pendingShipmentCount() }} Under customs inspection</small></article>
+        <article class="stat-card"><div class="stat-top"><span>Security Alerts</span><span class="stat-icon red" aria-hidden="true">⚑</span></div><strong>{{ securityAlertCount() }}</strong><small>From recorded inspection logs</small></article>
+      </section>
+
+      <div class="content-grid">
+        <section class="content-card" aria-labelledby="quick-actions-title">
+          <div class="card-heading"><div><h2 id="quick-actions-title">Quick Access</h2><p>Currently Available Services</p></div></div>
+          <a class="action-row" routerLink="/passengers"><span class="action-icon">♙</span><span><strong>Register Passenger</strong><small>Add passport details and set crossing status</small></span><span class="arrow">←</span></a>
+          <a class="action-row" routerLink="/vehicle-entry"><span class="action-icon">▣</span><span><strong>Register Vehicle</strong><small>Enter vehicle details and record a crossing decision</small></span><span class="arrow">←</span></a>
+          <a class="action-row" routerLink="/vehicle-visits"><span class="action-icon">▤</span><span><strong>Vehicle Visits</strong><small>Search vehicle records and filter crossing decisions</small></span><span class="arrow">←</span></a>
+          <a class="action-row" routerLink="/gate-devices"><span class="action-icon">⌁</span><span><strong>Gate Companion Devices</strong><small>Monitor equipment assigned to the active gate</small></span><span class="arrow">←</span></a>
+          <a class="action-row" routerLink="/shipments"><span class="action-icon">▧</span><span><strong>Shipment Management</strong><small>Register shipments and update customs status</small></span><span class="arrow">←</span></a>
+          <a class="action-row" routerLink="/inspections"><span class="action-icon">⚑</span><span><strong>Security Inspections</strong><small>Document inspection results and security alerts</small></span><span class="arrow">←</span></a>
+          <a class="action-row" routerLink="/reports"><span class="action-icon">▥</span><span><strong>Reports</strong><small>Record summaries and CSV export</small></span><span class="arrow">←</span></a>
+          <a class="action-row" routerLink="/operating-context" [queryParams]="{ returnUrl: '/' }"><span class="action-icon">⇄</span><span><strong>Change Work Location</strong><small>Choose a crossing and gate available to your account</small></span><span class="arrow">←</span></a>
+        </section>
+
+        <section class="content-card" aria-labelledby="system-status-title">
+          <div class="card-heading"><div><h2 id="system-status-title">System Status</h2><p>Current runtime environment information</p></div></div>
+          <div class="system-row"><span class="system-dot"></span><span>Angular Frontend</span><strong>Active</strong></div>
+          <div class="system-row"><span class="system-dot"></span><span>ASP.NET Core Services</span><strong>Connected</strong></div>
+          <div class="system-row"><span class="system-dot"></span><span>SQL Server Database</span><strong>Passengers and Vehicles</strong></div>
+          <p class="system-note">The frontend uses ASP.NET Core services. Passenger, vehicle, shipment, inspection, and audit log data are stored in SQL Server when the database and server are configured.</p>
+        </section>
+      </div>
+    }
+  </section>
+</main>

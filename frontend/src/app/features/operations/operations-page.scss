@@ -1,0 +1,52 @@
+:host { display: block; min-height: 100vh; background: #f4f7fb; color: #172b4d; }
+.ops-page { max-width: 1480px; margin: 0 auto; padding: 28px clamp(16px, 3vw, 42px) 56px; }
+.page-head, .panel-title, .head-actions { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.page-head { margin-bottom: 24px; }
+.back-link { color: #176b87; text-decoration: none; font-weight: 700; display: inline-block; margin-bottom: 14px; }
+.eyebrow { color: #39768a; font-size: .85rem; margin: 0 0 6px; }
+h1 { margin: 0; font-size: clamp(1.7rem, 3vw, 2.35rem); }
+h2 { margin: 0; font-size: 1.15rem; }
+p { color: #6b7b91; }
+.subhead { margin: 8px 0 0; }
+button { border: 0; cursor: pointer; font: inherit; font-weight: 700; border-radius: 9px; padding: 10px 15px; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+.primary { background: #176b87; color: #fff; }
+.secondary { background: #eaf0f5; color: #23445c; }
+.panel { background: white; border: 1px solid #e2e9f0; border-radius: 16px; padding: 22px; margin-top: 20px; box-shadow: 0 8px 28px rgb(18 45 70 / 4%); }
+.panel-title { margin-bottom: 18px; }
+.panel-title p { margin: 5px 0 0; font-size: .9rem; }
+.form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
+label { display: flex; flex-direction: column; gap: 7px; font-size: .9rem; font-weight: 700; color: #314b65; }
+input, select, textarea { box-sizing: border-box; width: 100%; min-width: 0; border: 1px solid #d5e0e9; border-radius: 9px; background: #fff; color: #172b4d; padding: 11px 12px; font: inherit; font-weight: 400; }
+input:focus, select:focus, textarea:focus { outline: 2px solid #a9d9e5; border-color: #397f97; }
+.wide { grid-column: 1 / -1; }
+.checkbox { flex-direction: row; align-items: center; gap: 10px; }
+.checkbox input { width: 18px; height: 18px; }
+.search { max-width: 360px; }
+.table-wrap { width: 100%; overflow: auto; }
+table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+th, td { text-align: right; border-bottom: 1px solid #edf1f5; padding: 13px 12px; font-size: .9rem; }
+th { color: #667a91; font-weight: 700; background: #f8fafc; }
+tbody tr:hover { background: #f8fbfd; }
+.actions { display: flex; gap: 8px; }
+.actions button { padding: 6px 9px; background: #edf5f8; color: #176b87; }
+.actions .danger-link { background: #fff0f0; color: #b42318; }
+.badge { display: inline-block; padding: 5px 9px; border-radius: 20px; background: #fff4d8; color: #8b5c00; font-size: .82rem; }
+.badge.good { background: #e2f7ec; color: #167347; }
+.badge.bad { background: #ffe7e7; color: #b42318; }
+.notes { white-space: normal; min-width: 180px; max-width: 300px; }
+.notes small { display: block; color: #b42318; margin-top: 5px; }
+.empty, .loading { text-align: center; padding: 28px; color: #6b7b91; }
+.alert { padding: 13px 16px; border-radius: 10px; margin: 12px 0; }
+.alert.error { color: #9b1c1c; background: #fff0f0; border: 1px solid #ffd0d0; }
+.alert.success { color: #176b48; background: #e9f9f0; border: 1px solid #c9efd9; }
+.report-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.metric { background: white; border: 1px solid #e2e9f0; border-radius: 15px; padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+.metric span { color: #65778c; }
+.metric strong { font-size: 2.1rem; }
+.metric.warning { border-top: 4px solid #d97706; }
+.report-note { line-height: 1.8; }
+@media (max-width: 900px) { .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .report-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .ops-page { padding: 18px 12px 36px; } .page-head, .panel-title { align-items: stretch; flex-direction: column; } .head-actions { justify-content: flex-start; } .form-grid, .report-grid { grid-template-columns: 1fr; } .search { max-width: none; } .panel { padding: 15px; } }
+
+@media print { :host { background: #fff; } .page-head .back-link, .head-actions, .form-panel, .alert, .search { display: none !important; } .ops-page { max-width: none; padding: 0; } .panel, .metric { box-shadow: none; break-inside: avoid; } }

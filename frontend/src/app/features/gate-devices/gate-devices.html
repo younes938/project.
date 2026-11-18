@@ -1,0 +1,66 @@
+<main class="devices-page">
+  <header class="page-header">
+    <div>
+      <a routerLink="/" class="back-link">← Dashboard</a>
+      <p class="eyebrow">GATE OPERATIONS</p>
+      <h1>Gate Monitoring</h1>
+      <p class="subtitle">Monitor gate equipment, live connections, and vehicle weight readings.</p>
+    </div>
+    <button class="refresh" type="button" (click)="refresh(); loadWeightHistory()" [disabled]="loading() || historyLoading()">↻ Refresh</button>
+  </header>
+
+  <section class="notice">
+    <span class="notice-icon">ⓘ</span>
+    <div><strong>Gate Companion · {{ mode() | uppercase }} MODE</strong>
+      <p>Gate <b>{{ gateId() }}</b> reports device status to the E-Ticket backend. In simulation mode, readings are generated for testing and are not real measurements.</p>
+    </div>
+  </section>
+
+  @if (error()) { <div class="error-notice" role="alert">{{ error() }}</div> }
+
+  <section class="summary">
+    <article><span>Registered Devices</span><strong>{{ devices().length }}</strong></article>
+    <article><span>Online Devices</span><strong class="good-number">{{ onlineCount() }}</strong></article>
+    <article><span>Offline Devices</span><strong class="bad-number">{{ offlineCount() }}</strong></article>
+    <article><span>Last Refreshed</span><strong class="time-value">{{ lastUpdated() | date:'shortTime' }}</strong></article>
+  </section>
+
+  <div class="section-title"><div><h2>Connected Equipment</h2><p>Live status reported by Gate Companion</p></div><span class="mode">{{ mode() | uppercase }} MODE</span></div>
+  <section class="device-grid">
+    @for (device of devices(); track device.deviceId) {
+      <article class="device-card">
+        <div class="device-top"><span class="device-icon">{{ device.deviceType === 'weighbridge' ? '⚖' : device.deviceType === 'anpr-camera' ? '▣' : device.deviceType === 'rfid-reader' ? '⌁' : '↔' }}</span><span class="status" [class.online]="isOnlineForTemplate(device)">{{ statusLabel(device) }}</span></div>
+        <h3>{{ deviceName(device.deviceType) }}</h3><p class="type">{{ deviceDescription(device.deviceType) }} · {{ device.deviceId }}</p>
+        @if (device.value !== null && device.value !== undefined) { <p class="device-reading">{{ device.value | number:'1.0-2' }} {{ device.unit || '' }}</p> }
+        <div class="device-footer"><span class="dot" [class.online-dot]="statusLabel(device) === 'ONLINE'"></span>{{ device.message || device.status }} · {{ device.timestamp | date:'mediumTime' }}</div>
+      </article>
+    } @empty {
+      <article class="empty-device">No device heartbeat has been received. Make sure the backend and GateCompanion are running.</article>
+    }
+  </section>
+
+  <section class="history-section">
+    <div class="section-title history-heading"><div><h2>Weight History</h2><p>Latest 100 saved weighbridge readings from SQL Server</p></div><span class="record-count">{{ totalReadings() }} LOADED</span></div>
+    <div class="weight-summary">
+      <article><span>Loaded Readings</span><strong>{{ totalReadings() }}</strong></article>
+      <article><span>Normal</span><strong class="normal-text">{{ normalCount() }}</strong></article>
+      <article><span>Warning</span><strong class="warning-text">{{ warningCount() }}</strong></article>
+      <article><span>Overweight</span><strong class="overweight-text">{{ overweightCount() }}</strong></article>
+    </div>
+    @if (historyError()) { <div class="error-notice" role="alert">{{ historyError() }}</div> }
+    <div class="history-table-wrapper">
+      <table class="history-table">
+        <thead><tr><th>Gate ID</th><th>Device ID</th><th>Weight (KG)</th><th>Weight Status</th><th>Date &amp; Time</th></tr></thead>
+        <tbody>
+          @for (record of weightHistory(); track record.id) {
+            <tr><td>{{ record.gateId }}</td><td>{{ record.deviceId }}</td><td class="weight-value">{{ record.weightKg | number:'1.0-2' }} kg</td><td><span class="weight-status" [class.normal]="record.weightStatus === 'NORMAL'" [class.warning]="record.weightStatus === 'WARNING'" [class.overweight]="record.weightStatus === 'OVERWEIGHT'">{{ record.weightStatus }}</span></td><td>{{ record.timestamp | date:'yyyy-MM-dd HH:mm:ss' }}</td></tr>
+          } @empty {
+            <tr><td colspan="5" class="empty-history">No weight readings have been saved yet.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="info-card"><h2>How Gate Companion works</h2><p>The Gate Companion service runs on the computer at the gate, communicates with local equipment, and securely sends readings and device status to the E-Ticket backend. The current adapter is simulated until physical equipment and vendor protocols are connected.</p><div class="flow"><span>Gate Equipment</span><b>→</b><span>Gate Companion</span><b>→</b><span>.NET API</span><b>→</b><span>SQL Server + E-Ticket UI</span></div></section>
+</main>

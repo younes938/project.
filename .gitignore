@@ -1,0 +1,44 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+.gradle/
+.idea/
+.kotlin/
+
+build/
+app/build/
+Thumbs.db
+
+# Linux desktop metadata
+.directory
+
+# Android signing keys and machine-local secret configuration
+*.jks
+*.keystore
+keystore.properties
+secrets.properties
+
+# Angular
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# .NET
+**/bin/
+**/obj/
+**/TestResults/
+*.suo
+*.user

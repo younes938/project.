@@ -1,0 +1,24 @@
+<main class="auth-page">
+  <section class="auth-card" aria-labelledby="sign-in-title">
+    <div class="brand-mark" aria-hidden="true">B</div>
+    <p class="eyebrow">Border Control Management System</p>
+    <h1 id="sign-in-title">Sign In</h1>
+    <p class="summary">Welcome to the border control platform. Sign in to access services available to your account.</p>
+
+    @if (reason === 'idle') {
+      <p class="message" role="status">Your session ended due to inactivity.</p>
+    } @else if (reason === 'expired') {
+      <p class="message" role="status">Your session has expired. Please sign in again.</p>
+    }
+
+    @if (auth.errorMessage(); as error) {
+      <p class="error" role="alert">{{ error }}</p>
+    }
+
+    <button type="button" (click)="signIn()" [disabled]="auth.isBusy()">
+      {{ auth.isBusy() ? 'Creating session…' : 'Sign in with Demo Account' }}
+    </button>
+
+    <p class="security-note">This is an initial version using a limited demo sign-in. Configure a production authentication provider before using this system in a live environment.</p>
+  </section>
+</main>

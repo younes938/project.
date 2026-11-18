@@ -1,0 +1,11 @@
+@ETicket.Api_HostAddress = http://localhost:5009
+
+GET {{ETicket.Api_HostAddress}}/health
+Accept: application/json
+
+###
+
+GET {{ETicket.Api_HostAddress}}/api/system/info
+Accept: application/json
+
+###

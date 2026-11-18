@@ -1,0 +1,67 @@
+<main class="dashboard">
+  <aside class="sidebar" aria-label="Main Menu">
+    <a class="brand" routerLink="/" aria-label="Back to Dashboard"><span class="brand-mark">B</span><span><strong>Border Control</strong><small>Electronic System</small></span></a>
+    <p class="nav-label">Main Menu</p>
+    <nav class="nav-list">
+      <a class="nav-item" routerLink="/"><span>▦</span> Dashboard</a>
+      <a class="nav-item active" routerLink="/passengers" aria-current="page"><span>♙</span> Passenger Management</a>
+      <a class="nav-item" routerLink="/vehicle-entry"><span>▣</span> Vehicle Entry</a>
+      <a class="nav-item" routerLink="/operating-context"><span>⇄</span> Crossing Settings</a>
+      <span class="nav-item disabled"><span>▤</span> Shipment Management <small>Coming soon</small></span>
+      <span class="nav-item disabled"><span>◷</span> Security Inspections <small>Coming soon</small></span>
+    </nav>
+    <div class="sidebar-footer"><span class="status-dot"></span><div><strong>Passenger Module</strong><small>Record and Crossing Management</small></div></div>
+  </aside>
+
+  <section class="main-area">
+    <header class="topbar">
+      <div><p class="eyebrow">Border Control Management System</p><h1>Passenger Management</h1><p class="subtitle">Register passenger details, review crossing decisions, and track entry and exit movements.</p></div>
+      <div class="topbar-actions">
+        @if (auth.session(); as session) { <div class="user-chip"><span class="avatar">{{ session.displayName.charAt(0) }}</span><span><strong>{{ session.displayName }}</strong><small>{{ session.roles.join(' ,  ') }}</small></span></div> }
+        <a class="back-link" routerLink="/">Dashboard</a>
+      </div>
+    </header>
+
+    @if (message()) { <div class="notice success" role="status">{{ message() }}</div> }
+    @if (error()) { <div class="notice error" role="alert">{{ error() }}</div> }
+
+    <section class="stats-grid" aria-label="Passenger Records Summary">
+      <article class="stat-card"><span class="stat-label">Total Records</span><strong>{{ passengers().length }}</strong><small>Saved passenger records</small></article>
+      <article class="stat-card"><span class="stat-label">Cleared to Cross</span><strong>{{ allowedCount() }}</strong><small>Crossing approved</small></article>
+      <article class="stat-card"><span class="stat-label">Pending Verification</span><strong>{{ reviewCount() }}</strong><small>Requires Officer Review</small></article>
+    </section>
+
+    <section class="content-card records-card">
+      <div class="section-heading"><div><h2>Passenger Records</h2><p>Search by passport number or name. You can add or edit a record.</p></div><button class="primary-btn" type="button" (click)="openCreate()">+ Register Passenger</button></div>
+      <div class="filters"><label class="search-box"><span>⌕</span><input aria-label="Search Passengers" [value]="search()" (input)="search.set($any($event.target).value)" placeholder="Name, passport number, or nationality"></label><label class="status-filter">Crossing Status<select [value]="statusFilter()" (change)="statusFilter.set($any($event.target).value)"><option>All</option>@for (status of statuses; track status) { <option [value]="status">{{ status }}</option> }</select></label></div>
+      <div class="table-wrap"><table><thead><tr><th>Passenger</th><th>Passport Number</th><th>Nationality</th><th>Origin → Destination</th><th>Movement</th><th>Crossing Status</th><th>Actions</th></tr></thead><tbody>
+        @for (passenger of filtered(); track passenger.id) {
+          <tr><td><strong>{{ passenger.fullName }}</strong><small class="cell-note">{{ passenger.notes || 'No notes' }}</small></td><td class="passport">{{ passenger.passportNumber }}</td><td>{{ passenger.nationality }}</td><td>{{ passenger.originCountry }} ← {{ passenger.destinationCountry }}</td><td><span class="direction-pill">{{ passenger.direction }}</span></td><td><span class="status-pill" [class.allowed]="passenger.status === 'Allowed'" [class.rejected]="passenger.status === 'Denied'" [class.review]="passenger.status === 'Pending Verification'">{{ passenger.status }}</span></td><td><div class="row-actions"><button type="button" class="text-btn" (click)="openEdit(passenger)">Edit</button><button type="button" class="text-btn danger-text" (click)="remove(passenger)">Delete</button></div></td></tr>
+        } @empty { <tr><td colspan="7" class="empty-state"><span>♙</span><strong>No matching records</strong><small>Add a new passenger or change your search terms.</small></td></tr> }
+      </tbody></table></div>
+      <p class="storage-note">Passenger records are managed by the ASP.NET Core API and stored in SQL Server.</p>
+    </section>
+  </section>
+</main>
+
+@if (showForm()) {
+  <div class="modal-backdrop">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="form-title">
+      <header class="modal-heading"><div><p class="eyebrow">Travel Document Details</p><h2 id="form-title">{{ editingId() ? 'Edit Passenger Details' : 'Register New Passenger' }}</h2></div><button type="button" class="close-btn" aria-label="Close" (click)="showForm.set(false)">×</button></header>
+      <form (submit)="$event.preventDefault(); save()">
+        <div class="form-grid">
+          <label class="wide">Full Name *<input required maxlength="120" [value]="form().fullName" (input)="updateField('fullName', $any($event.target).value)" autocomplete="name"></label>
+          <label>Passport Number *<input required maxlength="40" [value]="form().passportNumber" (input)="updateField('passportNumber', $any($event.target).value)" autocomplete="off"></label>
+          <label>Nationality *<input required maxlength="80" [value]="form().nationality" (input)="updateField('nationality', $any($event.target).value)"></label>
+          <label>Origin Country *<input required maxlength="80" [value]="form().originCountry" (input)="updateField('originCountry', $any($event.target).value)"></label>
+          <label>Destination *<input required maxlength="80" [value]="form().destinationCountry" (input)="updateField('destinationCountry', $any($event.target).value)"></label>
+          <label>Passenger Movement<select [value]="form().direction" (change)="updateField('direction', $any($event.target).value)">@for (direction of directions; track direction) { <option [value]="direction">{{ direction }}</option> }</select></label>
+          <label>Crossing Status<select [value]="form().status" (change)="updateField('status', $any($event.target).value)">@for (status of statuses; track status) { <option [value]="status">{{ status }}</option> }</select></label>
+          <label class="wide">Notes<textarea rows="3" maxlength="500" [value]="form().notes" (input)="updateField('notes', $any($event.target).value)" placeholder="Additional Notes (optional)"></textarea></label>
+        </div>
+        @if (error()) { <div class="notice error form-error" role="alert">{{ error() }}</div> }
+        <div class="modal-actions"><button type="button" class="secondary-btn" (click)="showForm.set(false)">Cancel</button><button type="submit" class="primary-btn" [disabled]="busy()">{{ busy() ? 'Saving…' : 'Save Details' }}</button></div>
+      </form>
+    </section>
+  </div>
+}

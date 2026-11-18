@@ -1,0 +1,61 @@
+<main class="ops-page">
+  <header class="page-head">
+    <div><a routerLink="/" class="back-link">← Back to Dashboard</a><p class="eyebrow">Border Control Management System</p><h1>{{ title }}</h1><p class="subhead">Data connected to ASP.NET Core services and SQL Server.</p></div>
+    <div class="head-actions"><button type="button" class="secondary" (click)="load()" [disabled]="loading()">Refresh</button>@if (mode === 'reports') { <button type="button" class="secondary" (click)="printReport()">Print / Save PDF</button> }<button type="button" class="primary" (click)="exportCsv()">Export CSV</button></div>
+  </header>
+
+  @if (error()) { <div class="alert error" role="alert">{{ error() }}</div> }
+  @if (notice()) { <div class="alert success" role="status">{{ notice() }}</div> }
+  @if (loading()) { <div class="loading">Loading data...</div> }
+
+  @if (mode === 'shipments') {
+    <section class="panel form-panel">
+      <div class="panel-title"><div><h2>{{ editingId() ? 'Edit Shipment' : 'Register New Shipment' }}</h2><p>Enter the goods details and customs status.</p></div>@if (editingId()) { <button class="secondary" type="button" (click)="resetForm()">Cancel Editing</button> }</div>
+      <form (ngSubmit)="save()" #shipmentForm="ngForm">
+        <div class="form-grid">
+          <label>Shipment Number<input name="shipmentNumber" [(ngModel)]="draft.shipmentNumber" required maxlength="60" /></label>
+          <label>Goods Type<input name="goodsType" [(ngModel)]="draft.goodsType" required maxlength="120" /></label>
+          <label>Weight (kg)<input name="weightKg" [(ngModel)]="draft.weightKg" required type="number" min="0.001" step="0.001" /></label>
+          <label>Origin Country<input name="originCountry" [(ngModel)]="draft.originCountry" required maxlength="80" /></label>
+          <label>Destination<input name="destinationCountry" [(ngModel)]="draft.destinationCountry" required maxlength="80" /></label>
+          <label>Customs Status<select name="customsStatus" [(ngModel)]="draft.customsStatus"><option>Under Inspection</option><option>Approved</option><option>Denied</option></select></label>
+          <label class="wide">Notes<textarea name="shipmentNotes" [(ngModel)]="draft.shipmentNotes" maxlength="1000" rows="2"></textarea></label>
+        </div>
+        <button class="primary" type="submit" [disabled]="shipmentForm.invalid || saving()">{{ saving() ? 'Saving...' : editingId() ? 'Save Changes' : 'Save Shipment' }}</button>
+      </form>
+    </section>
+    <section class="panel"><div class="panel-title"><div><h2>Shipment Records</h2><p>{{ shipments().length }} records</p></div><input class="search" placeholder="Search by shipment number, goods, or country" [(ngModel)]="search" name="shipmentSearch" /></div>
+      <div class="table-wrap"><table><thead><tr><th>Shipment Number</th><th>Goods</th><th>Weight</th><th>Origin → Destination</th><th>Customs Status</th><th>Date</th><th>Actions</th></tr></thead><tbody>
+        @for (item of filteredShipments(); track item.id) { <tr><td><strong>{{ item.shipmentNumber }}</strong></td><td>{{ item.goodsType }}</td><td>{{ item.weightKg }} kg</td><td>{{ item.originCountry }} → {{ item.destinationCountry }}</td><td><span class="badge" [class.good]="item.customsStatus === 'Approved'" [class.bad]="item.customsStatus === 'Denied'">{{ item.customsStatus }}</span></td><td>{{ item.createdAt | date:'short' }}</td><td class="actions"><button type="button" (click)="editShipment(item)">Edit</button><button class="danger-link" type="button" (click)="remove(item.id)">Delete</button></td></tr> }
+        @empty { <tr><td colspan="7" class="empty">No matching shipments found.</td></tr> }
+      </tbody></table></div>
+    </section>
+  }
+
+  @if (mode === 'inspections') {
+    <section class="panel form-panel"><div class="panel-title"><div><h2>{{ editingId() ? 'Edit Inspection Record' : 'Record Inspection Result' }}</h2><p>Link the inspection to a passenger, vehicle, or shipment. Record an alert only when documented justification exists.</p></div>@if (editingId()) { <button class="secondary" type="button" (click)="resetForm()">Cancel Editing</button> }</div>
+      <form (ngSubmit)="save()" #inspectionForm="ngForm"><div class="form-grid">
+        <label>Item Type<select name="targetType" [(ngModel)]="draft.targetType"><option>Vehicle</option><option>Passenger</option><option>Shipment</option></select></label>
+        <label>Plate / Passport / Shipment Number<input name="targetReference" [(ngModel)]="draft.targetReference" required maxlength="100" /></label>
+        <label>Inspection Result<select name="inspectionStatus" [(ngModel)]="draft.inspectionStatus"><option>Clear</option><option>Suspicious</option><option>Requires Review</option></select></label>
+        <label class="checkbox"><input type="checkbox" name="securityAlert" [(ngModel)]="draft.securityAlert" /> Record Security Alert</label>
+        <label class="wide">Inspection Notes<textarea name="inspectionNotes" [(ngModel)]="draft.inspectionNotes" required maxlength="2000" rows="3"></textarea></label>
+        @if (draft.securityAlert) { <label class="wide">Alert Details<textarea name="alertDetails" [(ngModel)]="draft.alertDetails" [required]="draft.securityAlert" maxlength="1000" rows="2"></textarea></label> }
+      </div><button class="primary" type="submit" [disabled]="inspectionForm.invalid || saving() || (draft.securityAlert && !draft.alertDetails.trim())">{{ saving() ? 'Saving...' : editingId() ? 'Save Changes' : 'Save Inspection Result' }}</button></form>
+    </section>
+    <section class="panel"><div class="panel-title"><div><h2>Security Inspection Records</h2><p>{{ inspections().length }} records</p></div><input class="search" placeholder="Search by reference, status, or notes" [(ngModel)]="search" name="inspectionSearch" /></div>
+      <div class="table-wrap"><table><thead><tr><th>Item</th><th>Reference</th><th>Result</th><th>Alert</th><th>Notes</th><th>Date</th><th>Actions</th></tr></thead><tbody>
+        @for (item of filteredInspections(); track item.id) { <tr><td>{{ item.targetType }}</td><td><strong>{{ item.targetReference }}</strong></td><td><span class="badge" [class.good]="item.status === 'Clear'" [class.bad]="item.status !== 'Clear'">{{ item.status }}</span></td><td>@if (item.securityAlert) { <span class="badge bad">Security Alert</span> } @else { — }</td><td class="notes">{{ item.notes }} @if (item.securityAlert) { <small>{{ item.alertDetails }}</small> }</td><td>{{ item.createdAt | date:'short' }}</td><td class="actions"><button type="button" (click)="editInspection(item)">Edit</button><button class="danger-link" type="button" (click)="remove(item.id)">Delete</button></td></tr> }
+        @empty { <tr><td colspan="7" class="empty">No inspection results recorded.</td></tr> }
+      </tbody></table></div>
+    </section>
+  }
+
+  @if (mode === 'reports') {
+    @if (report(); as r) { <section class="report-grid">
+      <article class="metric"><span>Passengers</span><strong>{{ r.passengers }}</strong></article><article class="metric"><span>Vehicle Visits</span><strong>{{ r.vehicles }}</strong></article><article class="metric"><span>Shipments</span><strong>{{ r.shipments }}</strong></article><article class="metric"><span>Inspections</span><strong>{{ r.inspections }}</strong></article><article class="metric warning"><span>Security Alerts</span><strong>{{ r.securityAlerts }}</strong></article><article class="metric warning"><span>Non-clear / Review Required Cases</span><strong>{{ r.suspiciousInspections }}</strong></article><article class="metric"><span>Shipments Under Inspection</span><strong>{{ r.shipmentsPending }}</strong></article>
+    </section><section class="panel report-note"><h2>Report Information</h2><p>Numbers are calculated from database records available to the current user at report generation time: {{ r.generatedAt | date:'medium' }}.</p><p>You can export the report summary as CSV using the button at the top of the page.</p></section> }
+  }
+
+  @if (mode === 'audit') { <section class="panel"><div class="panel-title"><div><h2>Audit Log</h2><p>Last {{ audit().length }} operations recorded in the database</p></div></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Event</th><th>Entity</th><th>Record ID</th><th>Action</th><th>Result</th><th>Device Context</th></tr></thead><tbody>@for (item of audit(); track item.id) { <tr><td>{{ item.timestamp | date:'short' }}</td><td>{{ item.eventType }}</td><td>{{ item.entityType }}</td><td>{{ item.entityId || '—' }}</td><td>{{ item.action }}</td><td>{{ item.result }}</td><td>{{ item.deviceContext }}</td></tr> } @empty { <tr><td colspan="7" class="empty">No operations recorded yet.</td></tr> }</tbody></table></div></section> }
+</main>

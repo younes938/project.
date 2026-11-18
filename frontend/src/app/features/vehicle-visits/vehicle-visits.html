@@ -1,0 +1,71 @@
+```html
+<main class="page">
+
+  <!-- Page Header -->
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Border Traffic Management</p>
+      <h1>Vehicle Visit Records</h1>
+      <p class="subtitle">
+        View vehicle visit records and associated crossing decisions
+        for the current operating location.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button class="secondary-btn" type="button" (click)="refresh()" [disabled]="loading()">
+        {{ loading() ? 'Refreshing…' : 'Refresh Records' }}
+      </button>
+
+      <a class="primary-btn" routerLink="/vehicle-entry">
+        + Register Vehicle
+      </a>
+
+      <a class="back-link" routerLink="/">
+        Dashboard
+      </a>
+    </div>
+  </header>
+
+  <!-- Summary -->
+  <section class="summary" aria-label="Records Summary">
+    <article>
+      <span>Total Records</span>
+      <strong>{{ visits().length }}</strong>
+    </article>
+
+    <article>
+      <span>Vehicles Passed</span>
+      <strong>{{ passedCount() }}</strong>
+    </article>
+
+    <article>
+      <span>Displayed Results</span>
+      <strong>{{ filteredVisits().length }}</strong>
+    </article>
+  </section>
+
+  <!-- Error Message -->
+  @if (error()) {
+  <div class="notice error" role="alert">
+    {{ error() }}
+  </div>
+  }
+
+  <!-- Records Table -->
+  <section class="table-card">
+
+    <!-- Search and Filter -->
+    <div class="filters">
+      <label class="search-box">
+        <span aria-hidden="true">⌕</span>
+
+        <input type="search" placeholder="Search by license plate or record ID" [value]="search()"
+          (input)="search.set($any($event.target).value)" />
+      </label>
+
+      <label class="filter-label">
+        Crossing Status
+
+        <select [value]="statusFilter()" (change)="statusFilter.set($any($event.target).value)">
+          ```

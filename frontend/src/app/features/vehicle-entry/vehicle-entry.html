@@ -1,0 +1,275 @@
+```html
+<main class="entry-page">
+  <section class="entry-card" aria-labelledby="entry-title">
+
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Stage 4 · Vehicle Entry</p>
+        <h1 id="entry-title">Vehicle Registration</h1>
+
+        @if (operatingContext.current(); as context) {
+        <p class="context-line">
+          {{ context.gateName }} · {{ context.checkpointName }}
+        </p>
+        }
+      </div>
+
+      <a class="secondary" routerLink="/">
+        Back to Workspace
+      </a>
+    </header>
+
+    @if (!supportsEntry()) {
+    <div class="warning" role="alert">
+      <strong>
+        This mode does not allow vehicles to enter the border crossing area.
+      </strong>
+
+      <p>
+        Please select "Rear Exit Gate" or "Border Entry Gate".
+      </p>
+
+      <a routerLink="/operating-context" [queryParams]="{ returnUrl: '/vehicle-entry' }">
+        Change Operating Mode
+      </a>
+    </div>
+    } @else if (store.created(); as created) {
+
+    <section class="success" aria-labelledby="result-title" role="status">
+      <p class="eyebrow">Decision Saved</p>
+
+      <h2 id="result-title">
+        {{ created.plateNumber }}
+      </h2>
+
+      <p>
+        @if (created.status === 'awaitingControls') {
+        Entry approved. The vehicle is awaiting inspection.
+        } @else {
+        Entry denied. The record has been completed with the status
+        "Not Allowed to Pass".
+        }
+      </p>
+
+      <dl>
+        <div>
+          <dt>Record ID</dt>
+          <dd>{{ created.id }}</dd>
+        </div>
+
+        <div>
+          <dt>Time</dt>
+          <dd>{{ created.enteredAt | date: 'dd/MM/yyyy HH:mm:ss' }}</dd>
+        </div>
+
+        <div>
+          <dt>e-Queue</dt>
+          <dd>{{ created.queueEntry ? 'Found' : 'Not Found' }}</dd>
+        </div>
+      </dl>
+
+      <button class="primary" type="button" (click)="startNewEntry()">
+        Register Next Vehicle
+      </button>
+    </section>
+
+    } @else {
+
+    <form [formGroup]="form" (submit)="preventSubmit($event)" novalidate>
+
+      <!-- Vehicle Information -->
+      <section class="form-section" aria-labelledby="vehicle-data-title">
+        <h2 id="vehicle-data-title">Vehicle Information</h2>
+
+        <div class="form-grid">
+
+          <div class="field plate-field">
+            <label for="plate-number">License Plate Number *</label>
+
+            <div class="input-action">
+              <input id="plate-number" type="text" formControlName="plateNumber" autocomplete="off"
+                placeholder="AA 1234 BB" aria-describedby="plate-help" />
+
+              <button class="secondary" type="button" [disabled]="store.isBusy()" (click)="lookupQueue()">
+                {{
+                store.status() === 'lookingUp'
+                ? 'Checking…'
+                : 'Check e-Queue'
+                }}
+              </button>
+            </div>
+
+            <small id="plate-help">
+              Letters and numbers only; spaces and hyphens will be removed.
+            </small>
+
+            @if (
+            form.controls.plateNumber.touched &&
+            form.controls.plateNumber.invalid
+            ) {
+            <p class="field-error">
+              Enter a valid license plate number between 2 and 16 characters.
+            </p>
+            }
+          </div>
+
+          <div class="field">
+            <label for="vehicle-brand">Vehicle Make *</label>
+
+            <input id="vehicle-brand" type="text" formControlName="brand" maxlength="80" />
+
+            @if (
+            form.controls.brand.touched &&
+            form.controls.brand.invalid
+            ) {
+            <p class="field-error">
+              Enter the vehicle make.
+            </p>
+            }
+          </div>
+
+          <div class="field">
+            <label for="vehicle-type">Vehicle Type *</label>
+
+            <input id="vehicle-type" type="text" formControlName="type" maxlength="80" />
+
+            @if (
+            form.controls.type.touched &&
+            form.controls.type.invalid
+            ) {
+            <p class="field-error">
+              Enter the vehicle type.
+            </p>
+            }
+          </div>
+
+          <label class="service-toggle">
+            <input type="checkbox" formControlName="isServiceVehicle" />
+
+            <span>
+              <strong>Service Vehicle</strong>
+              <small>
+                Passenger count and trailers are not applicable.
+              </small>
+            </span>
+          </label>
+
+        </div>
+      </section>
+
+      <!-- e-Queue Lookup Result -->
+      @if (store.queueLookup(); as queue) {
+      <section class="queue-result" [class.found]="queue.found" aria-live="polite">
+        <h2>e-Queue Information</h2>
+
+        @if (queue.entry; as entry) {
+        <p>
+          <strong>{{ entry.plateNumber }}</strong>
+          was found in the queue.
+        </p>
+
+        <small>
+          Status: {{ entry.externalStatus }} · Last synchronized
+          {{ entry.lastSynchronizedAt | date: 'dd/MM/yyyy HH:mm' }}
+        </small>
+        } @else {
+        <p>
+          <strong>{{ queue.plateNumber }}</strong>
+          was not found in the e-Queue.
+        </p>
+        }
+      </section>
+      }
+
+      <!-- Additional Information -->
+      <section class="form-section" aria-labelledby="additional-data-title">
+        <h2 id="additional-data-title">Additional Information</h2>
+
+        @if (form.controls.isServiceVehicle.value) {
+        <p class="service-note">
+          Passenger count and trailer fields are disabled for service vehicles.
+        </p>
+        }
+
+        <div class="form-grid three-columns">
+
+          <div class="field">
+            <label for="persons-count">Number of Persons *</label>
+
+            <input id="persons-count" type="number" formControlName="personsCount" min="1" max="100" />
+
+            @if (
+            form.controls.personsCount.touched &&
+            form.controls.personsCount.invalid
+            ) {
+            <p class="field-error">
+              The value must be between 1 and 100.
+            </p>
+            }
+          </div>
+
+          <div class="field">
+            <label for="trailer-one">Trailer Plate Number 1</label>
+
+            <input id="trailer-one" type="text" formControlName="trailerOne" />
+          </div>
+
+          <div class="field">
+            <label for="trailer-two">Trailer Plate Number 2</label>
+
+            <input id="trailer-two" type="text" formControlName="trailerTwo" />
+          </div>
+
+          <div class="field photo-field">
+            <label for="photo-reference">Vehicle Photo</label>
+
+            <input id="photo-reference" type="text" formControlName="photoReference"
+              placeholder="Identifier or secure link" />
+
+            <small>
+              Camera photo capture will be integrated during the VMS/camera integration phase.
+            </small>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Error Message -->
+      @if (store.errorMessage(); as error) {
+      <p class="error" role="alert">
+        {{ error }}
+      </p>
+      }
+
+      <!-- Decision -->
+      <section class="decision" aria-labelledby="decision-title">
+        <div>
+          <h2 id="decision-title">Entry Decision</h2>
+
+          <p>
+            Review the information before saving. A vehicle visit record
+            will be created once a decision is submitted.
+          </p>
+        </div>
+
+        <div class="decision-actions">
+          <button class="deny" type="button" [disabled]="store.isBusy()" (click)="submit('deny')">
+            Deny Entry
+          </button>
+
+          <button class="allow" type="button" [disabled]="store.isBusy()" (click)="submit('allow')">
+            {{
+            store.status() === 'submitting'
+            ? 'Saving…'
+            : 'Allow Entry'
+            }}
+          </button>
+        </div>
+      </section>
+
+    </form>
+    }
+
+  </section>
+</main>
+```

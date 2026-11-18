@@ -1,0 +1,7 @@
+<div class="language-switcher" [attr.dir]="language.isArabic() ? 'rtl' : 'ltr'">
+  <span class="language-label">{{ language.isArabic() ? 'لغة الواجهة' : 'Interface language' }}</span>
+  <button type="button" (click)="language.toggle()" [attr.aria-label]="language.isArabic() ? 'Switch to English' : 'التبديل إلى العربية'">
+    {{ language.isArabic() ? 'English' : 'العربية' }}
+  </button>
+</div>
+<router-outlet />

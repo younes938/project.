@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ETicket.Api/ETicket.Api.csproj" />
+    <Project Path="src/GateCompanion/GateCompanion.csproj" />
+    <Project Path="src/ETicket.Application/ETicket.Application.csproj" />
+    <Project Path="src/ETicket.Domain/ETicket.Domain.csproj" />
+    <Project Path="src/ETicket.Infrastructure/ETicket.Infrastructure.csproj" />
+    <Project Path="src/ETicket.Integrations/ETicket.Integrations.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ETicket.Domain.Tests/ETicket.Domain.Tests.csproj" />
+  </Folder>
+</Solution>
